@@ -1,12 +1,23 @@
-# Etapa 1: Build
-FROM maven:3.8.4-openjdk-17-slim AS build
+# Use a imagem oficial do Maven para compilar o projeto
+FROM maven:3.8.6-openjdk-17 AS build
+
+# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
+
+# Copia o código-fonte para o diretório de trabalho
 COPY . .
+
+# Compila o projeto e gera o arquivo JAR
 RUN mvn clean package -DskipTests
 
-# Etapa 2: Execução
+# Usa a imagem oficial do OpenJDK para rodar a aplicação
 FROM openjdk:17-jdk-slim
+
+# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
-COPY --from=build /target/spring-boot-starter-parent-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
+
+# Copia o arquivo JAR do estágio anterior para o contêiner final
+COPY --from=build /app/target/*.jar app.jar
+
+# Define o comando para rodar a aplicação
 CMD ["java", "-jar", "app.jar"]
